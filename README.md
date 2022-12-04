@@ -9,7 +9,7 @@ We learn 10 sprints during 4 months program
 - Dta Transformation
 - Data Visualization
 - Statistics
-- Intro to Classical
+- Intro to 'Classical' Machine Learning
 - Intro to Python
 - Essential Python for Data Analyst 
 - Dashboard 
