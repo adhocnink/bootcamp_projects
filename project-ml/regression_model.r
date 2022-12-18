@@ -1,73 +1,66 @@
+install.packages("mlbench")
+
+# train KNN model
+library(mlbench)
 library(caret)
+library(dplyr)
 
-model1 <- lm(mpg ~ hp+wt,
-             data = mtcars)
+# K-Nearest Neighbors
+data("BostonHousing")
+View(BostonHousing)
 
-model1
+#Regression Problem
+# Data clean ?
 
-#caret train()
-model2 <- train(mpg ~ hp+wt,
-      data = mtcars,
-      method = "lm")   ## ML Algorithm
+mean(complete.cases(BostonHousing))  ##equal = 1 (clean)
 
-model2$finalModel
-
-## ML Basic pipeline
-
-#1. prepare /split data
-split_data <- train_test_split(mtcars)
+#split data
+split_data <- train_test_split(BostonHousing, 0.8)
 train_data <- split_data[[1]]
 test_data <- split_data[[2]]
 
+nrow(train_data); nrow(test_data)
 
-#2. train model
-model <- train(mpg ~ hp+wt,
-               data = train_data,
-               method = "lm")
-
-
-
-#3 score model / prediction
-p_mpg <- predict(model, newdata = test_data)
-
-
-#4 evaluate model
-error <- p_mpg - test_data$mpg
-( test_rmse <- sqrt(mean(error**2)) )
-
-## check whether it's overfitting or not from difference between test_rmse and rmse of model
-
-#5 Save model
-saveRDS(model, "linearReg_model.RDS")   //To apply to use for another data
-
----------------------------- create function --------------------------------
-
-train_test_split <- function (data, train_size = 0.8) {
+#train model
+set.seed(99)
+ctrl <- trainControl(
+  method = "repeatedcv",
+  number = 5, #k=5
+  repeats =5,
+  verboseIter= TRUE #print log
   
-  set.seed(24)
-  n <- nrow(data)
-  id <- sample(1:n, size = n*train_size)
-  train_data <- data[id, ]
-  test_data <- data[-id, ]
-  
-  return(list(train_data, test_data))
-  
-}
-
-
----------------------------To apply for new data with the same model-------------------
-#Load Model
-model <- readRDS("linearReg_model.RDS")
-
-# Batch prediction (Apply to New Data)    
-nov_data <- data.frame(                   ##sample data
-  id = 1:3,
-  hp = c(200,150,188),
-  wt = c(2.5,1.9,3.2)
 )
 
-nov_prediction <- predict(model, newdata = nov_data)
+#grid search
+grid <- data.frame(k = c(3,7,9))   ##select k value by myself  -> ถ้าเลือก k น้อยมีค่า rmse ต่ำและเหมาะกับ train ได้ดี แต่ overfit ถ้าเพิ่มค่า k มีโอกาศที่จะ better model
 
-# create a new dataset with prediction
-nov_data$pred <- nov_prediction
-write.csv(nov_data, "resultNov.csv", row.names = F)
+knn_model <- train(
+      medv~ nox + lstat + rm + indus,
+      data = train_data,
+      method = "knn",
+      trControl = ctrl,
+      #tuneLength =5 #no of k
+      tuneGrid = grid
+      )
+plot(knn_model)
+
+# score + evaluate model
+p <- predict(knn_model,
+             newdata = test_data)
+
+RMSE(p, test_data$medv)
+
+#train error = 5.53
+#test error = 5.21
+#good fit (mildly overfit)
+
+#feature importance (which field is the most important)
+varImp(knn_model) 
+
+##quality of model depends on X which caused y indeed
+
+# save model
+saveRDS(knn_model, "knnModel.RDS")
+
+# read model
+model <- readRDS("knnModel.RDS")
