@@ -1,7 +1,7 @@
 # Bootcamp_Projects
-Data science bootcamp with `adToy`
+Hi I'm Nink as product manager who join Data science bootcamp with `adToy`
 
-We have learned 10 sprints during 4 months program with BootCamp DataRokie
+I have learned 10 sprints during 4 months program with BootCamp DataRokie
 
 - Spreadsheets
 - SQL 
